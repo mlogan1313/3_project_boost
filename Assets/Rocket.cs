@@ -26,7 +26,8 @@ public class Rocket : MonoBehaviour
 
     enum State { Alive, Dying, Transcending }
     private State _state = State.Alive;
-    
+
+    private bool _collisionsEnabled = true;
 
     // Use this for initialization
     void Start()
@@ -44,11 +45,26 @@ public class Rocket : MonoBehaviour
             RespondToThrustInput();
             RespondToRotateInput();
         }
+
+        // if in debug mode
+        if (Debug.isDebugBuild) RespondToDebugKeys();
+    }
+
+    private void RespondToDebugKeys()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            LoadNextLevel();
+        }
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            _collisionsEnabled = !_collisionsEnabled;
+        }
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        if (_state != State.Alive) return;
+        if (_state != State.Alive || !_collisionsEnabled) return;
 
         switch (collision.gameObject.tag)
         {
@@ -83,12 +99,20 @@ public class Rocket : MonoBehaviour
 
     private void LoadNextLevel()
     {
-        SceneManager.LoadScene((int) Scenes.LevelTwo);
+        var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        print("current index: " + currentSceneIndex);
+        var nextSceneIndex = currentSceneIndex + 1;
+        if (nextSceneIndex == SceneManager.sceneCountInBuildSettings)
+        {
+            print("inside reset scene to 0");
+            nextSceneIndex = 0;
+        }
+        SceneManager.LoadScene(nextSceneIndex);
     }
 
     private void LoadFirstLevel()
     {
-        SceneManager.LoadScene((int)Scenes.LevelOne);
+        SceneManager.LoadScene(0);
     }
 
     private void RespondToThrustInput()
@@ -117,7 +141,7 @@ public class Rocket : MonoBehaviour
         {
             _mainEngineParticles.Play();
         }
-        
+
     }
 
     private void RespondToRotateInput()

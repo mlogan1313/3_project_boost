@@ -1301,7 +1301,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4436062694943966, guid: f95d846a70beb7b47867eb126d71e204, type: 2}
       propertyPath: m_LocalScale.z
-      value: 65.04036
+      value: 13.456476
       objectReference: {fileID: 0}
     - target: {fileID: 1280171552317304, guid: f95d846a70beb7b47867eb126d71e204, type: 2}
       propertyPath: m_TagString
@@ -2033,7 +2033,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4436062694943966, guid: f95d846a70beb7b47867eb126d71e204, type: 2}
       propertyPath: m_LocalScale.z
-      value: 65.04036
+      value: -0.5049079
       objectReference: {fileID: 0}
     - target: {fileID: 1280171552317304, guid: f95d846a70beb7b47867eb126d71e204, type: 2}
       propertyPath: m_TagString
