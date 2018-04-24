@@ -9,6 +9,16 @@ public class Rocket : MonoBehaviour
     [SerializeField] float _rcsThrust = 100f;
     [SerializeField] float _mainThrust = 100f;
 
+    [SerializeField] AudioClip _mainEngine;
+    [SerializeField] AudioClip _success;
+    [SerializeField] AudioClip _death;
+
+    [SerializeField] ParticleSystem _mainEngineParticles;
+    [SerializeField] ParticleSystem _successParticles;
+    [SerializeField] ParticleSystem _deathParticles;
+
+    [SerializeField] float _levelLoadDelay = 1f;
+
     enum Scenes
     {
         LevelOne = 0, LevelTwo = 1
@@ -16,6 +26,7 @@ public class Rocket : MonoBehaviour
 
     enum State { Alive, Dying, Transcending }
     private State _state = State.Alive;
+    
 
     // Use this for initialization
     void Start()
@@ -30,13 +41,8 @@ public class Rocket : MonoBehaviour
     {
         if (_state == State.Alive)
         {
-            Thrust();
-            Rotate();
-        }
-
-        if (_state != State.Alive)
-        {
-            _audioSource.Stop();
+            RespondToThrustInput();
+            RespondToRotateInput();
         }
     }
 
@@ -49,14 +55,30 @@ public class Rocket : MonoBehaviour
             case "Friendly":
                 break;
             case "Finish":
-                _state = State.Transcending;
-                Invoke("LoadNextLevel", 1f);
+                StartSuccessSequence();
                 break;
             default:
-                _state = State.Dying;
-                Invoke("LoadFirstLevel", 1f);
+                StartDeathSequence();
                 break;
         }
+    }
+
+    private void StartDeathSequence()
+    {
+        _state = State.Dying;
+        _audioSource.Stop();
+        _audioSource.PlayOneShot(_death);
+        _deathParticles.Play();
+        Invoke("LoadFirstLevel", _levelLoadDelay);
+    }
+
+    private void StartSuccessSequence()
+    {
+        _state = State.Transcending;
+        _audioSource.Stop();
+        _audioSource.PlayOneShot(_success);
+        _successParticles.Play();
+        Invoke("LoadNextLevel", _levelLoadDelay);
     }
 
     private void LoadNextLevel()
@@ -69,36 +91,50 @@ public class Rocket : MonoBehaviour
         SceneManager.LoadScene((int)Scenes.LevelOne);
     }
 
-    private void Thrust()
+    private void RespondToThrustInput()
     {
         if (Input.GetKey(KeyCode.Space))
         {
-            _rigidBody.AddRelativeForce(Vector3.up * _mainThrust);
-            if (!_audioSource.isPlaying) _audioSource.Play();
+            ApplyThrust();
         }
         else
         {
             _audioSource.Stop();
+            _mainEngineParticles.Stop();
         }
     }
 
-    private void Rotate()
+    private void ApplyThrust()
+    {
+        _rigidBody.AddRelativeForce(Vector3.up * _mainThrust * Time.deltaTime);
+
+        if (!_audioSource.isPlaying)
+        {
+            _audioSource.PlayOneShot(_mainEngine);
+        }
+
+        if (!_mainEngineParticles.isPlaying)
+        {
+            _mainEngineParticles.Play();
+        }
+        
+    }
+
+    private void RespondToRotateInput()
     {
         _rigidBody.freezeRotation = true;
 
         var rotationThisFrame = _rcsThrust * Time.deltaTime;
 
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
             transform.Rotate(Vector3.forward * rotationThisFrame);
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
             transform.Rotate(-Vector3.forward * rotationThisFrame);
         }
 
         _rigidBody.freezeRotation = false;
     }
-
-   
 }
